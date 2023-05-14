@@ -5,8 +5,10 @@ from .base import (
     ForbiddenException,
     NotFoundException,
     UnauthorizedException,
-    UnprocessableEntity,
+    UnprocessableEntity
 )
+from asyncpg.exceptions import PostgresError
+
 
 __all__ = [
     "CustomException",
@@ -16,4 +18,5 @@ __all__ = [
     "UnauthorizedException",
     "UnprocessableEntity",
     "DuplicateValueException",
+    "PostgresError"
 ]

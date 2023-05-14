@@ -22,6 +22,7 @@ class QueryMixin(BaseQuery, SignalMixin):
         db_session: AsyncSession,
         joins: set = None,
         order_by=None,
+        limit: int = 1,
         **kwargs
     ) -> Union[Type[Any], Type["QueryMixin"]]:
         self.query = self.build_handler(

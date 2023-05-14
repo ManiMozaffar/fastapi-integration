@@ -27,14 +27,13 @@ class BaseController(Generic[ModelType]):
         :return: The model instance.
         """
 
-        db_obj = await self.repository.get_by(
-            field="id", value=id_, limit=1
+        db_obj = await self.repository.get(
+            id=id_
         )
         if not db_obj:
             raise NotFoundException(
                 f"{self.model_class.__tablename__.title()} with id: {id} does not exist"
             )
-
         return db_obj
 
     async def get_by_uuid(self, uuid: UUID) -> ModelType:

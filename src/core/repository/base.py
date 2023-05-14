@@ -15,7 +15,7 @@ class BaseRepository(Generic[ModelType]):
         self.session = db_session
         self.model_class: Type[ModelType] = model
 
-    def filter_and_count(
+    async def filter_and_count(
         self,
         order_by: str = None,
         limit: int = None,
@@ -31,19 +31,21 @@ class BaseRepository(Generic[ModelType]):
 
         :return: The created model instance.
         """
+        results = self._order_by(
+                order_by=order_by,
+                limit=limit,
+                skip=skip,
+                **kwargs
+        )
+        count = self._count(
+            order_by=order_by,
+            limit=limit,
+            skip=skip,
+            **kwargs
+        )
         return dict(
-            results=self._order_by(
-                order_by=order_by,
-                limit=limit,
-                skip=skip,
-                **kwargs
-            ),
-            count=self._count(
-                order_by=order_by,
-                limit=limit,
-                skip=skip,
-                **kwargs
-            )
+            results=await results,
+            count=await count
         )
 
     async def create(self, **kwargs) -> ModelType:
@@ -53,7 +55,7 @@ class BaseRepository(Generic[ModelType]):
         :param attributes: The attributes to create the model with.
         :return: The created model instance.
         """
-        return self.model_class.objects.create(
+        return await self.model_class.objects.create(
             db_session=self.session,
             **kwargs
         )
@@ -96,7 +98,7 @@ class BaseRepository(Generic[ModelType]):
         :param join_: The joins to make.
         :return: A list of model instances.
         """
-        return self.model_class.objects.filter(
+        return await self.model_class.objects.filter(
             limit=limit,
             skip=skip,
             **kwargs
@@ -122,7 +124,7 @@ class BaseRepository(Generic[ModelType]):
         filter_args = {
             field: value
         }
-        return self.model_class.objects.filter(
+        return await self.model_class.objects.filter(
             limit=limit,
             skip=skip,
             **filter_args
@@ -144,7 +146,7 @@ class BaseRepository(Generic[ModelType]):
         :param join_: The joins to make.
         :return: The model instance.
         """
-        return self.model_class.objects.get(
+        return await self.model_class.objects.get(
             db_session=self.session,
             limit=limit,
             skip=skip,
@@ -158,7 +160,7 @@ class BaseRepository(Generic[ModelType]):
         :param kwargs: The query to delete.
         :return: None
         """
-        return self.model_class.objects.delete(
+        return await self.model_class.objects.delete(
             db_session=self.session,
             **kwargs
         )
@@ -200,7 +202,7 @@ class BaseRepository(Generic[ModelType]):
         :param model: The model to sort.
         :return: The sorted query.
         """
-        return self.model_class.objects.filter(
+        return await self.model_class.objects.filter(
             order_by=order_by,
             limit=limit,
             skip=skip,

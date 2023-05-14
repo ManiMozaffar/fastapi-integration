@@ -9,11 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import RelationshipProperty
 from sqlalchemy.sql.selectable import Select
 
-from fastapi_integration.dependencies import SQLAlchemy
 from .utils import get_association_id_column
 
 
-class BaseQuery(SQLAlchemy):
+class BaseQuery:
     needs_scalar: bool = True
     _instance = None
     _prefetch_related_joins = []

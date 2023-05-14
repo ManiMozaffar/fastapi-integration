@@ -51,7 +51,7 @@ session: Union[AsyncSession, async_scoped_session] = async_scoped_session(
 )
 
 
-async def get_session():
+async def get_session() -> Union[AsyncSession, async_scoped_session]:
     """
     Get the database session.
     This can be used for dependency injection.

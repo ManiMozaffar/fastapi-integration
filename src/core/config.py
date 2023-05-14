@@ -1,7 +1,7 @@
 from enum import Enum
 
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
-
+from dotenv import load_dotenv
 
 class EnvironmentType(str, Enum):
     DEVELOPMENT = "development"
@@ -31,4 +31,5 @@ class Config(BaseConfig):
     CELERY_BACKEND_URL: str = "redis://localhost:6379/0"
 
 
+load_dotenv()
 config: Config = Config()

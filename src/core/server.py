@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from api import router
 from core.cache import Cache, CustomKeyMaker, RedisBackend
 from core.config import config
-from core.exceptions import CustomException
+from core.exceptions import CustomException, PostgresError
 from core.fastapi.dependencies import Logging
 from core.fastapi.middlewares import (
     AuthBackend,
@@ -37,10 +37,20 @@ def init_routers(app_: FastAPI) -> None:
 
 def init_listeners(app_: FastAPI) -> None:
     @app_.exception_handler(CustomException)
-    async def custom_exception_handler(request: Request, exc: CustomException):
+    async def custom_exception_handler(_: Request, exc: CustomException):
         return JSONResponse(
             status_code=exc.code,
             content={"error_code": exc.error_code, "message": exc.message},
+        )
+
+    @app_.exception_handler(PostgresError)
+    async def pg_exception_handler(_: Request, __: PostgresError):
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error_code": 503,
+                "message": "Error occurred while connecting to the database"
+            },
         )
 
 

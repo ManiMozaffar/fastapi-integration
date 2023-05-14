@@ -21,7 +21,7 @@ class UserRepository(BaseRepository[User]):
         :return: User.
         """
         return await self.get(
-            username__iexact=username
+            username__iexact=username, limit=1
         )
 
     async def get_by_email(
@@ -34,7 +34,7 @@ class UserRepository(BaseRepository[User]):
         :return: User.
         """
         return await self.get(
-            email__iexact=email
+            email__iexact=email, limit=1
         )
 
     async def _join_tasks(self, query: Select) -> Select:

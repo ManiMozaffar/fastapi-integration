@@ -4,7 +4,6 @@ from app.models import User
 from app.repositories import UserRepository
 from app.schemas.extras.token import Token
 from core.controller import BaseController
-from core.database import Propagation, Transactional
 from core.exceptions import BadRequestException, UnauthorizedException
 from core.security import JWTHandler, PasswordHandler
 
@@ -14,7 +13,6 @@ class AuthController(BaseController[User]):
         super().__init__(model=User, repository=user_repository)
         self.user_repository = user_repository
 
-    @Transactional(propagation=Propagation.REQUIRED)
     async def register(
         self, email: EmailStr, password: str, username: str
     ) -> User:
@@ -64,4 +62,4 @@ class AuthController(BaseController[User]):
 
 
 class AuthBackendAdminController:
-    raise NotImplementedError
+    """Not yet implemented"""

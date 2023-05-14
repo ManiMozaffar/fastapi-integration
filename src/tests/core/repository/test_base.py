@@ -15,20 +15,20 @@ class TestBaseRepository:
 
     @pytest.mark.asyncio
     async def test_create(self, repository):
-        user = await repository.create(self._user_data_generator())
+        user = await repository.create(**self._user_data_generator())
         await repository.session.commit()
         assert user.id is not None
 
     @pytest.mark.asyncio
     async def test_get_all(self, repository):
-        await repository.create(self._user_data_generator())
-        await repository.create(self._user_data_generator())
+        await repository.create(**self._user_data_generator())
+        await repository.create(**self._user_data_generator())
         users = await repository.get_all()
         assert len(users) == 2
 
     def _user_data_generator(self):
-        return {
-            "email": fake.email(),
-            "username": fake.user_name(),
-            "password": fake.password(),
-        }
+        return dict(
+            email=fake.email(),
+            username=fake.user_name(),
+            password=fake.password(),
+        )

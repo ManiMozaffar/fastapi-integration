@@ -10,6 +10,8 @@ In this repository, we aim the following features to be added:
 - [ ] Django ORM-like translated version of SQLAlchemy
 - [ ] Solid Integratable Admin Panel
 - [ ] FastAPI Shell
+- [ ] pre-start application controller
+- [ ] dockerize FastAPI with Uvicorn and Gunicorn
 
 
 

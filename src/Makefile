@@ -45,7 +45,7 @@ run: start
 start: ## Starts the server
 	$(eval include .env)
 	$(eval export $(sh sed 's/=.*//' .env))
-
+	poetry run python pre_start/up_postgresql.py
 	poetry run python main.py
 
 .PHONY: migrate
