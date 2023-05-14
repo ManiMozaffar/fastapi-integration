@@ -3,6 +3,7 @@ from enum import Enum
 from pydantic import BaseSettings, PostgresDsn, RedisDsn
 from dotenv import load_dotenv
 
+
 class EnvironmentType(str, Enum):
     DEVELOPMENT = "development"
     PRODUCTION = "production"
@@ -11,7 +12,7 @@ class EnvironmentType(str, Enum):
 
 class BaseConfig(BaseSettings):
     class Config:
-        case_sensitive = True
+        case_sensitive = False
 
 
 class Config(BaseConfig):

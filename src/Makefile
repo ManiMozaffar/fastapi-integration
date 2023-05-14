@@ -43,17 +43,19 @@ run: start
 
 .PHONY: start
 start: ## Starts the server
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
 	poetry run python pre_start/up_postgresql.py
 	poetry run python main.py
 
 .PHONY: migrate
 migrate: ## Run the migrations
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
 	poetry run alembic upgrade head
+
+
+.PHONY: deploy
+deploy: ## Deploy
+	poetry run alembic upgrade head
+	poetry run python main.py
+
 
 .PHONY: rollback
 rollback: ## Rollback migrations one level
@@ -64,24 +66,15 @@ rollback: ## Rollback migrations one level
 
 .PHONY: reset-database
 reset-database: ## Rollback all migrations
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
 	poetry run alembic downgrade base
 
 .PHONY: generate-migration 
 generate-migration: ## Generate a new migration
-	$(eval include .env) 
-	$(eval export $(sh sed 's/=.*//' .env)) 
-
 	@read -p "Enter migration message: " message; \
 	poetry run alembic revision --autogenerate -m "$$message"
 
 .PHONY: celery-worker
 celery-worker: ## Start celery worker
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
 	poetry run celery -A worker worker -l info
 
 # Check, lint and format targets
@@ -110,7 +103,4 @@ check-lockfile: ## Compares lock file with pyproject.toml
 
 .PHONY: test
 test: ## Run the test suite
-	$(eval include .env)
-	$(eval export $(sh sed 's/=.*//' .env))
-
 	poetry run pytest -vv -s --cache-clear ./

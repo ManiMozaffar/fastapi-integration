@@ -1,7 +1,8 @@
 version: "3.4"
 
-services:
+services:  
   postgresql:
+    container_name: app_postgresql_db
     image: postgres:14.2-alpine
     environment:
       POSTGRES_USER: postgres
@@ -11,32 +12,78 @@ services:
       - "5432:5432"
     volumes:
       - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - app_network
 
   postgresql-test:
+    container_name: app_postgresql_test_db
     image: postgres:14.2-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password123
       POSTGRES_DB: db-test
+    command: postgres -p 5431
     ports:
-      - "5431:5432"
+      - "5431:5431"
     volumes:
       - ./postgresql-test:/var/lib/postgresql/data
+    networks:
+      - app_network
 
   redis:
+    container_name: app_redis_db
     image: redis:6.2.7
     ports:
       - "6379:6379"
     volumes:
       - redis:/data
+    networks:
+      - app_network
 
   rabbitmq:
+    container_name: app_rabbitmq
     image: rabbitmq:3.9.7
     ports:
       - "5672:5672"
     environment:
       - RABBITMQ_DEFAULT_USER=rabbit
       - RABBITMQ_DEFAULT_PASS=password
+    networks:
+      - app_network
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgresql
+      - redis
+      - rabbitmq
+    env_file:
+      - .env
+    networks:
+      - app_network
+  
+
+  fastapi-test:
+    container_name: fastapi_test
+    build:
+      context: .
+      dockerfile: tests/Dockerfile
+    depends_on:
+      - postgresql
+      - redis
+      - rabbitmq
+    env_file:
+      - .env
+    networks:
+      - app_network
+
 
 volumes:
   redis:
+
+networks:
+  app_network:

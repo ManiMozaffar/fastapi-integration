@@ -1,0 +1,92 @@
+name: Run Tests
+
+on:
+  pull_request_review:
+    types: [submitted]
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.review.state == 'approved')
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    defaults:
+      run:
+        working-directory: src
+
+    env:
+      PYTHONPATH: ${{ github.workspace }}/src
+      POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+      TEST_POSTGRES_URL: ${{ secrets.TEST_POSTGRES_URL }}
+      ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+      DEBUG: ${{ secrets.DEBUG }}
+      SHOW_SQL_ALCHEMY_QUERIES: ${{ secrets.SHOW_SQL_ALCHEMY_QUERIES }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
+      CELERY_BACKEND_URL: ${{ secrets.CELERY_BACKEND_URL }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v1.3
+        with:
+          PYTHONPATH: ${{ github.workspace }}/src
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+          TEST_POSTGRES_URL: ${{ secrets.TEST_POSTGRES_URL }}
+          ENVIRONMENT: ${{ secrets.ENVIRONMENT }}
+          DEBUG: ${{ secrets.DEBUG }}
+          SHOW_SQL_ALCHEMY_QUERIES: ${{ secrets.SHOW_SQL_ALCHEMY_QUERIES }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          CELERY_BROKER_URL: ${{ secrets.CELERY_BROKER_URL }}
+          CELERY_BACKEND_URL: ${{ secrets.CELERY_BACKEND_URL }}
+          fail_on_empty: false
+          file_name: .env
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          installer-parallel: true
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
+      - name: Migrate Database
+        run: make migrate
+
+      - name: Start test
+        run: make test
